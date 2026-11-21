@@ -100,5 +100,5 @@ the README and on the website, so edit that file, not the README table.
 
 The searchable website in `site/` is built and published by `.github/workflows/pages.yml`.
 To turn it on: in the repository's **Settings → Pages**, set **Source** to **GitHub Actions**.
-The site appears at https://jlib271.github.io/stem-ed-research-programs/ after the next push to `main`
+The site appears at https://stemedplus.github.io/stem-ed-research-programs/ after the next push to `main`
 (or run the workflow by hand from the Actions tab).

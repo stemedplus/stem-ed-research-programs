@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/JLib271/stem-ed-research-programs/schema/program.schema.json",
+  "$id": "https://github.com/stemedplus/stem-ed-research-programs/schema/program.schema.json",
   "title": "Graduate program or research group in STEM+ education research",
   "description": "One graduate program or research group in STEM education research, including discipline-based education research (DBER) and medical and health professions education. One file per program in programs/.",
   "type": "object",
