@@ -63,7 +63,7 @@ def load_programs() -> tuple[list[dict], list[str]]:
         for d in record.get("disciplines") or []:
             if d not in DISCIPLINES:
                 errors.append(f"{name}: unknown discipline {d!r}; use one of {sorted(DISCIPLINES)} "
-                              "(the STEMEd+ disciplines in schema/stemedplus_disciplines.json, kept in HuMeta)")
+                              "(the STEMEd+ disciplines in schema/stemedplus_disciplines.json, kept in stemedplus-theme)")
         programs.append(record)
     errors.extend(issue_form_errors())
     seen: dict[tuple, str] = {}

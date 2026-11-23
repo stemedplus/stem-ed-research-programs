@@ -27,7 +27,7 @@ Each program records five things:
 | **Institution** | University or college, and country |
 | **Home department** | The department, school, or institute that grants the degree, and any partner units |
 | **Degree types** | BS, MA, MS, MEd, MAT, MHPE, EdD, PhD, or Certificate |
-| **Discipline** | Agriculture, Bioscience, Chemistry, Earth Science, Engineering, Health Education (including medical and health professions education), History & Philosophy of Science, Human Dimensions, Learning Science, Mathematics, Physics, Science & Health Communication, or Science Education. These are the STEMEd+ disciplines shared with [STEMEd+ Jobs](https://github.com/stemedplus/stemed-jobs), Funding, and the Digest, kept in the [HuMeta profile](https://github.com/stemedplus/humeta-profile) (`stemedplus_disciplines.json`). |
+| **Discipline** | Agriculture, Astronomy & Space Science, Bioscience, Chemistry, Computing, Earth Science, Engineering, Environmental Science, Health Education (including medical and health professions education), History & Philosophy of Science, Human Dimensions, Learning Science, Mathematics, Physics, Science & Health Communication, Science Education, or STEAM: Arts+STEM. These are the STEMEd+ disciplines shared with [STEMEd+ Jobs](https://github.com/stemedplus/stemed-jobs), Funding, and the Digest, kept in [stemedplus-theme](https://github.com/stemedplus/stemedplus-theme) (`stemedplus_disciplines.json`). |
 | **Program faculty** | Faculty who supervise graduate students in the program |
 
 🔎 **Search and filter the list:** https://stemedplus.github.io/stem-ed-research-programs/

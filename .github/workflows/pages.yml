@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: Refresh shared disciplines from HuMeta
+      - name: Refresh shared disciplines from stemedplus-theme
         run: python scripts/stemedplus_disciplines.py --refresh schema/stemedplus_disciplines.json
       - name: Refresh the shared STEMEd+ look
         continue-on-error: true
