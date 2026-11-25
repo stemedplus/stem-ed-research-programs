@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate every program file and build the README table and the website data.
 
-    python scripts/build.py           # validate, then write README.md table and site/programs.json
+    python scripts/build.py           # validate, then write README.md table, site/programs.json, site/feeds/new.xml
     python scripts/build.py --check   # validate and fail if README.md is out of date
     python scripts/build.py --validate  # only check the program files and other-lists.yml
 """
@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import subprocess
 import sys
+from email.utils import format_datetime
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 import yaml
 from jsonschema import Draft202012Validator, FormatChecker
@@ -26,6 +29,9 @@ DISCIPLINES = shared.labels_by_id(DISCIPLINE_FILE)
 ISSUE_FORM = ROOT / ".github" / "ISSUE_TEMPLATE" / "add_program.yml"
 README = ROOT / "README.md"
 SITE_DATA = ROOT / "site" / "programs.json"
+FEED = ROOT / "site" / "feeds" / "new.xml"
+SITE_URL = "https://stemedplus.github.io/stem-ed-research-programs/"
+FEED_SIZE = 50
 START, END = "<!-- programs:start -->", "<!-- programs:end -->"
 OTHER_START, OTHER_END = "<!-- other-lists:start -->", "<!-- other-lists:end -->"
 OTHER_LISTS = ROOT / "other-lists.yml"
@@ -158,6 +164,59 @@ def site_data(programs: list[dict], other_lists: list[dict]) -> dict:
     }
 
 
+def added_dates() -> dict[str, str]:
+    """Program id -> the day its file was first added (from git history). Empty when git can't say,
+    for example in a shallow checkout; the feed then falls back to last_verified."""
+    try:
+        if subprocess.run(["git", "rev-parse", "--is-shallow-repository"], cwd=ROOT, capture_output=True,
+                          text=True, check=True).stdout.strip() == "true":
+            return {}
+        log = subprocess.run(["git", "log", "--diff-filter=A", "--name-only", "--format=%x00%as", "--", "programs/"],
+                             cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return {}
+    dates, day = {}, ""
+    for line in log.splitlines():
+        if line.startswith("\x00"):
+            day = line[1:]
+        elif line.startswith("programs/") and line.endswith(".yml"):
+            dates[Path(line).stem] = day  # newest first, so the last date seen is the first time it was added
+    return dates
+
+
+def new_programs_rss(programs: list[dict], added: dict[str, str]) -> str:
+    """site/feeds/new.xml: the most recently added programs, newest first."""
+    def when(r):
+        return added.get(r["id"]) or str(r.get("last_verified") or "")
+    items = []
+    for r in sorted(programs, key=lambda r: (when(r), r["id"]), reverse=True)[:FEED_SIZE]:
+        inst = r["institution"]["name"]
+        fields = ", ".join(DISCIPLINES.get(d, d) for d in r.get("disciplines") or [])
+        title = f"{inst}: {fields}" if fields else inst
+        parts = [r.get("home_department") or ""]
+        if r.get("degree_types"):
+            parts.append("Degrees: " + ", ".join(r["degree_types"]))
+        if r.get("faculty"):
+            parts.append("Faculty: " + ", ".join(f["name"] for f in r["faculty"] if f.get("name")))
+        if r.get("closed_to_new_students"):
+            parts.append("Not taking new students.")
+        day = when(r)
+        date = ""
+        if day:
+            stamp = dt.datetime.strptime(day[:10], "%Y-%m-%d").replace(tzinfo=dt.timezone.utc)
+            date = f"<pubDate>{format_datetime(stamp)}</pubDate>"
+        items.append(f"<item><title>{escape(title)}</title><link>{escape(r['url'])}</link>"
+                     f'<guid isPermaLink="false">{escape(SITE_URL + "#" + r["id"])}</guid>{date}'
+                     + "".join(f"<category>{escape(DISCIPLINES.get(d, d))}</category>" for d in r.get("disciplines") or [])
+                     + f"<description>{escape('. '.join(x for x in parts if x))}</description></item>")
+    return ('<?xml version="1.0" encoding="utf-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>'
+            "<title>STEM+ Education Research Graduate Programs: new programs</title>"
+            f"<link>{SITE_URL}</link>"
+            f'<atom:link href="{SITE_URL}feeds/new.xml" rel="self" type="application/rss+xml"/>'
+            f"<description>The {FEED_SIZE} programs and research groups most recently added to the list, newest first.</description>"
+            "<language>en</language>" + "".join(items) + "</channel></rss>\n")
+
+
 def main() -> int:
     programs, errors = load_programs()
     other_lists, other_errors = load_other_lists()
@@ -180,7 +239,11 @@ def main() -> int:
     README.write_text(new_readme, encoding="utf-8")
     SITE_DATA.parent.mkdir(exist_ok=True)
     SITE_DATA.write_text(json.dumps(site_data(programs, other_lists), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"OK: {len(programs)} programs valid; wrote README.md tables and {SITE_DATA.relative_to(ROOT)}.")
+    added = added_dates()
+    FEED.parent.mkdir(exist_ok=True)
+    FEED.write_text(new_programs_rss(programs, added), encoding="utf-8")
+    print(f"OK: {len(programs)} programs valid; wrote README.md tables, {SITE_DATA.relative_to(ROOT)}, and "
+          f"{FEED.relative_to(ROOT)} (dates from {'git history' if added else 'last_verified: no full git history here'}).")
     return 0
 
 

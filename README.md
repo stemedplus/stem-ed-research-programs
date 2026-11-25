@@ -32,6 +32,8 @@ Each program records five things:
 
 🔎 **Search and filter the list:** https://stemedplus.github.io/stem-ed-research-programs/
 
+📡 **Follow new programs:** [RSS feed](https://stemedplus.github.io/stem-ed-research-programs/feeds/new.xml) (the 50 most recently added) · [all programs as JSON](https://stemedplus.github.io/stem-ed-research-programs/programs.json)
+
 ## Programs
 
 The list starts with Earth Science (geoscience) education research programs, carried over from the
